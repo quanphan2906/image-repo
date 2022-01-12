@@ -14,6 +14,7 @@ const useStyles = makeStyles({
         borderBottom: '1px solid #eaeaea',
         margin: '0px 0px 4em',   
     },
+
     navContainer: {
         display: 'flex',
         justifyContent: 'space-between',
@@ -22,6 +23,7 @@ const useStyles = makeStyles({
         width: '100%',
         padding: '0 4rem 0',
     },
+
     uploadBtn: {
         height: '100%',
         fontFamily: "'Space Mono', monospace",
@@ -37,20 +39,52 @@ const useStyles = makeStyles({
             color: 'white',
             backgroundColor: 'black',
         }
-    }
+    },
+
+    inputContainer: {
+        border: '1px solid #eaeaea',
+        borderRadius: '4px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    label: {
+        cursor: 'pointer',
+        border: '1px solid black',
+        padding: '8px',
+        color: 'black',
+        transition: 'all .4s ease',
+        '&:hover': {
+            border: '1px solid #ffffff',
+            color: 'white',
+            backgroundColor: 'black',
+        }
+    },
+
+    fileInput: {
+        display: 'none',
+    },
 })
 
-export default function NavBar({ toggleModalDisplay }) {
+export default function NavBar({ uploadImageToFirebase }) {
 
     const classes = useStyles()
 
     return (
         <nav className={classes.navbar}>
             <div className={classes.navContainer}>
-                <h1>Image repository</h1>
-                <button className={classes.uploadBtn} onClick={ () => { toggleModalDisplay(true) } }>
-                    UPLOAD
-                </button>
+                <div>
+                    <h1>Image repository</h1>
+                </div>
+                <div className={classes.inputContainer}>
+                        <label for='single' className={classes.label}>Choose a photo</label>
+                        <input type='file' 
+                            id='single'
+                            multiple 
+                            className={classes.fileInput}
+                            onChange={ (e) => { uploadImageToFirebase(e) } } />
+                </div>
             </div>
         </nav>
     )

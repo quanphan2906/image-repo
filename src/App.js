@@ -2,13 +2,12 @@ import { useState } from "react";
 
 import ImageList from "./components/ImageList";
 import NavBar from "./components/NavBar";
-import UploadModal from "./components/UploadModal";
 
 import { ThemeProvider, createTheme } from "@material-ui/core";
 
 import { storage, database } from "./firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { collection, addDoc } from "firebase/firestore"; 
+import { collection, addDoc, query, orderBy, limit } from "firebase/firestore";
 
 const theme = createTheme({
 	typography: {
@@ -20,45 +19,41 @@ const theme = createTheme({
 
 function App() {
 
-	const [isModalDisplay, setModalDisplay] = useState(false);
-	const toggleModalDisplay = (bool) => {
-		setModalDisplay(bool);
-	}
-
-	const [image, setImage] = useState('');
-	const handleImageUpload = (e) => {
-		let _image = e.target.files[0];
-		setImage(_image);
-	}
-
 	const uploadImageToFirebase = async (e) => {
 		e.preventDefault();
-		if (image == null) return;
-		
-		const imageRef = ref(storage, `/images/${image.name}`);
-		await uploadBytes(imageRef, image);
-		alert("Upload success");
-		const imageUrl = await getDownloadURL(imageRef);
 
-		try {
-			const docRef = await addDoc(collection(database, "/images"), {
-			  	imageUrl
-			});
-			console.log("Document written with ID: ", docRef.id);
-		} catch (e) {
-			console.error("Error adding document: ", e);
+		const images = e.target.files;
+
+		if (images == null) return;
+
+		for (const image of images) {
+
+			try {
+
+				const imageRef = ref(storage, `/images/${image.name}`);
+				await uploadBytes(imageRef, image);
+		
+				const imageUrl = await getDownloadURL(imageRef);
+
+				addDoc( collection(database, "/images") , {
+					imageUrl,
+				  	created: Date.now(),
+			  	});
+
+			} catch (e) {
+
+				console.error("Error adding document: ", e);
+			}
 		}
 	}
 
 	return (
 		<ThemeProvider theme={theme}>
-			<NavBar toggleModalDisplay = {toggleModalDisplay} />
+			<NavBar
+				uploadImageToFirebase={uploadImageToFirebase}
+			/>
 			<main>
 				<ImageList />
-				<UploadModal isModalDisplay={isModalDisplay} 
-							 toggleModalDisplay={toggleModalDisplay}
-							 handleImageUpload={handleImageUpload}
-							 uploadImageToFirebase={uploadImageToFirebase}/>
 			</main>
 		</ThemeProvider>
 	);
