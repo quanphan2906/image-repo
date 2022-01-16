@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import ImageContainer from './ImageContainer'
+import React, { useContext, useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core'
 
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore"; 
-import { database } from '../firebase';
+import { getImages } from "../api/images"
+
+import { AuthContext } from "../context/AuthProvider"
 
 
 const useStyles = makeStyles({
+
     imageContainer: {
         display: 'flex',
         flexWrap: 'wrap',
@@ -14,41 +15,50 @@ const useStyles = makeStyles({
         rowGap: '16px',
         columnGap: '8px',
         flex: '0 1 33%',
-    }
+    },
+    
+    imgContainer: {
+        boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
+        width: '32.33%',
+        maxHeight: '16rem',
+    },
+
+    img: {
+        borderRadius: "4px",
+        height: '100%',
+        width: '100%',
+        objectFit: 'cover',
+    },
+
 })
 
 export default function ImageList() {
 
-    const [imagesUrl, setImagesUrl] = useState([]);
+    const classes = useStyles();
 
-    const classes = useStyles()
+    const [imagesURL, setImagesURL] = useState([]);
+    const { userDetails } = useContext(AuthContext);
 
-    useEffect( () => {
+    useEffect(() => {
+
+        let unsubscribe = () => {};
         
-        const q = query(collection(database, "/images"), orderBy("created"))
-        const unsubscribe = onSnapshot( q, snapshot =>  {
+        if ( userDetails ) {
+            const { uid } = userDetails;
+            unsubscribe = getImages(uid, setImagesURL);
+        }
 
-            const _imagesUrl = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                _imagesUrl.push(data.imageUrl);
-            });
-
-            setImagesUrl(_imagesUrl);
-
-        } )
-
-        return () => unsubscribe();
-    }, []);
-
-    console.log("imagesUrl", imagesUrl);
+        return unsubscribe;
+    }, [userDetails]);
 
     return (
         <div className={classes.imageContainer}>
-            {imagesUrl.map((imageUrl) => {
+            {imagesURL.map((imageURL) => {
 
                 return (
-                    <ImageContainer imageUrl={imageUrl} />
+                    <div className={classes.imgContainer}>
+                        <img className={classes.img} src={imageURL} />
+                    </div>
                 )
 
             })}

@@ -1,7 +1,11 @@
-import React from 'react';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
+import React, { useContext } from 'react';
+
+import { uploadImage } from '../api/images';
+import { signOut } from "../api/auth"
+
 import { makeStyles } from '@material-ui/core';
+import Button from './Button';
+import { AuthContext } from '../context/AuthProvider';
 
 const useStyles = makeStyles({
 
@@ -24,25 +28,14 @@ const useStyles = makeStyles({
         padding: '0 4rem 0',
     },
 
-    uploadBtn: {
-        height: '100%',
-        fontFamily: "'Space Mono', monospace",
-        padding: '6px 14px 6px',
-        border: '1px solid',
-        backgroundColor:'white',
-        fontWeight: '500',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        transition: 'all .4s ease',
-        '&:hover': {
-            border: '1px solid #ffffff',
-            color: 'white',
-            backgroundColor: 'black',
-        }
+    menuContainer: {
+        display: 'flex',
+        rowGap: '16px',
+        width: '20%',
+        justifyContent: 'space-around',
     },
 
     inputContainer: {
-        border: '1px solid #eaeaea',
         borderRadius: '4px',
         display: 'flex',
         alignItems: 'center',
@@ -65,11 +58,26 @@ const useStyles = makeStyles({
     fileInput: {
         display: 'none',
     },
+
+    avatar: {
+        width: '50px',
+        height: '50px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        cursor: 'pointer',
+        '&:hover': {
+            border: '5px solid #eaeaea',
+        }
+    }
 })
 
-export default function NavBar({ uploadImageToFirebase }) {
+export default function NavBar() {
 
-    const classes = useStyles()
+    const classes = useStyles();
+
+    const { userDetails } = useContext(AuthContext);
+    console.log("userDetails");
+    console.log(userDetails);
 
     return (
         <nav className={classes.navbar}>
@@ -77,13 +85,18 @@ export default function NavBar({ uploadImageToFirebase }) {
                 <div>
                     <h1>Image repository</h1>
                 </div>
-                <div className={classes.inputContainer}>
-                        <label for='single' className={classes.label}>Choose a photo</label>
-                        <input type='file' 
-                            id='single'
-                            multiple 
-                            className={classes.fileInput}
-                            onChange={ (e) => { uploadImageToFirebase(e) } } />
+                <div className={classes.menuContainer}>
+                    <div className={classes.inputContainer}>
+                            <label htmlFor='upload-image' className={classes.label}> Upload </label>
+                            <input type='file' 
+                                id='upload-image'
+                                multiple
+                                className={classes.fileInput}
+                                onChange={ (e) => { uploadImage(e, userDetails.uid) } } />
+                    </div>
+                    <div>
+                        {/* <Button text='Sign out' onClick={signOut} /> */}
+                    </div>
                 </div>
             </div>
         </nav>
